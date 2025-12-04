@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Happy Birthday Lipsita — Together Forever</title>
+<style>
+:root{--bg:#0f1724;--accent:#ff6b92;--accent2:#7be2ff;--glass:rgba(255,255,255,0.06)}
+html,body{height:100%;margin:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial}
+body{background:linear-gradient(180deg,var(--bg) 0%, #071228 100%);color:#fff;overflow-x:hidden;overflow-y:auto}
+.pages{height:100%;position:relative}
+.page{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:2rem;transition:transform 700ms cubic-bezier(.2,.9,.2,1),opacity 500ms;backface-visibility:hidden;overflow-y:auto}
+.page.hidden{opacity:0;transform:translateY(20px) scale(.98);pointer-events:none}
+.page[data-index="3"]{align-items:flex-start;padding-top:3.5rem;padding-bottom:2.5rem}
+.card{max-width:900px;width:100%;background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.06);border-radius:18px;padding:3rem;text-align:center;box-shadow:0 10px 30px rgba(2,6,23,0.6);position:relative}
+h1{font-size:2.1rem;margin:0 0 .4rem;letter-spacing:0.6px}
+h2{font-size:1.1rem;margin-top:0;color:rgba(255,255,255,0.8)}
+.shayari{font-size:1.7rem;line-height:1.45;margin:1.6rem 0;color: #fff;font-weight:600}
+.small{font-size:.95rem;color:rgba(255,255,255,0.75)}
+.controls{display:flex;gap:.6rem;justify-content:center;align-items:center;margin:1rem 0}
+.btn{background:var(--glass);border:1px solid rgba(255,255,255,0.04);padding:.7rem 1rem;border-radius:10px;color:#fff;cursor:pointer}
+.nav-dot{width:10px;height:10px;border-radius:999px;background:rgba(255,255,255,0.12);margin:0 .3rem}
+.nav-dot.active{background:linear-gradient(90deg,var(--accent),var(--accent2));box-shadow:0 6px 18px rgba(123,226,255,0.12)}
+.name{display:block;font-weight:800;font-size:1.6rem;color:var(--accent)}
+.heart-wrap{display:flex;flex-direction:column;align-items:center;gap:1rem}
+.heart{width:140px;height:140px;position:relative;transform:scale(1);animation:pulse 1s ease-in-out infinite}
+.heart::before,.heart::after{content:'';position:absolute;left:50%;top:30%;width:70px;height:110px;background:linear-gradient(180deg,var(--accent),#ff3d7a);border-radius:50px 50px 0 0;transform-origin:center}
+.heart::before{transform:translateX(-50%) rotate(-45deg)}
+.heart::after{transform:translateX(-50%) rotate(45deg)}
+@keyframes pulse{0%{transform:scale(.98)}50%{transform:scale(1.06)}100%{transform:scale(.98)}}
+@media (max-width:600px){
+  .shayari{font-size:1.4rem}
+  .card{padding:1.8rem 1.4rem;border-radius:14px}
+  .heart{width:110px;height:110px}
+  h1{font-size:1.7rem}
+}
+.hint{position:fixed;left:18px;bottom:18px;background:rgba(0,0,0,0.28);padding:.6rem 1rem;border-radius:999px;font-size:.9rem}
+.glitter{background:linear-gradient(90deg,var(--accent), #ffd28a, var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:900}
+footer{position:fixed;right:18px;bottom:18px;color:rgba(255,255,255,0.6);font-size:.9rem}
+#flame{transition:opacity 300ms ease}
+
+/* Realistic candle flame */
+#flameOuter {
+  transform-origin: bottom center;
+  animation: flameFlicker 0.15s infinite alternate;
+}
+
+@keyframes flameFlicker {
+  0%   { transform: scaleY(1) translateX(0);   filter: blur(0.5px); opacity: 0.9; }
+  50%  { transform: scaleY(0.9) translateX(-0.5px); filter: blur(1px); opacity: 0.8; }
+  100% { transform: scaleY(1.1) translateX(0.6px);  filter: blur(1.2px); opacity: 1; }
+}
+.side-slider{position:fixed;right:18px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:.4rem;background:rgba(0,0,0,0.2);padding:1rem;border-radius:18px;backdrop-filter:blur(6px);box-shadow:0 8px 20px rgba(0,0,0,0.3);z-index:20}
+.side-slider input{writing-mode:bt-lr;-webkit-appearance:slider-vertical;appearance:none;height:180px;width:28px;background:transparent}
+.side-slider input::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 0 10px rgba(123,226,255,0.6)}
+.side-slider input::-webkit-slider-runnable-track{width:6px;background:rgba(255,255,255,0.3);border-radius:999px}
+.side-slider input::-moz-range-thumb{width:18px;height:18px;border:none;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 0 10px rgba(123,226,255,0.6)}
+.side-slider input::-moz-range-track{width:6px;background:rgba(255,255,255,0.3);border-radius:999px}
+.cake-piece{transform-box:fill-box;transform-origin:center;transition:transform 1.2s ease}
+.gallery-overlay{position:fixed;inset:0;z-index:40;background:radial-gradient(circle at top,#1f2937 0,#020617 60%);display:none;align-items:center;justify-content:center;padding:2rem}
+.gallery-inner{max-width:1000px;width:100%;max-height:90vh;overflow-y:auto;background:rgba(15,23,42,0.9);border-radius:20px;border:1px solid rgba(148,163,184,0.3);padding:1.5rem;box-shadow:0 20px 60px rgba(0,0,0,0.7)}
+.gallery-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.gallery-title{font-size:1.6rem;font-weight:700}
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+.gallery-grid img{width:100%;border-radius:14px;object-fit:cover;max-height:260px;box-shadow:0 10px 30px rgba(15,23,42,0.8)}
+.gallery-close{background:var(--glass);border:1px solid rgba(248,250,252,0.2);color:#e5e7eb;border-radius:999px;padding:.4rem .9rem;cursor:pointer;font-size:.9rem}
+.blurStart{filter:blur(12px);opacity:0;transition:opacity 1.8s ease, filter 2.4s ease;}
+.blurClear{filter:blur(0);opacity:1;}
+@keyframes bounce { from { transform:translateY(0); } to { transform:translateY(-10px); } }
+@keyframes fadeIn { 0% {opacity:0;} 100% {opacity:1;} }
+/* Side framed photos pinned on screen, visible on all pages */
+.side-photo{
+  position:fixed;
+  bottom:10px;
+  width:clamp(80px,18vw,140px);
+  aspect-ratio:3/5;
+  border:3px solid rgba(255,255,255,0.85);
+  border-radius:18px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.7);
+  overflow:hidden;
+  background:#020617;
+  z-index:20;
+  pointer-events:none;
+}
+
+.side-photo img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.side-photo.left{
+  left:10px;
+  transform:rotate(-7deg);
+}
+
+.side-photo.right{
+  right:10px;
+  transform:rotate(7deg);
+}
+
+@media (max-width:700px){
+  .side-photo{
+    bottom:8px;
+    width:90px;
+  }
+  .side-photo.left{
+    left:6px;
+  }
+  .side-photo.right{
+    right:6px;
+  }
+}
+
+@keyframes bounce { from { transform:translateY(0); } to { transform:translateY(-10px); } }
+@keyframes fadeIn { 0% {opacity:0;} 100% {opacity:1;} }
+</style>
+</head>
+<body>
+
+<!-- Side photos, pinned for all pages -->
+<div class="side-photo left">
+  <img src="575375993_24939243529068577_942051849717105348_n.jpg" alt="Lipsita photo left">
+</div>
+
+<div class="side-photo right">
+  <img src="Screenshot 2025-08-10 200920.jpg" alt="Lipsita photo right">
+</div>
+
+<div class="pages">
+<!-- Page 1 -->
+<section class="page" data-index="0">
+<div class="card">
+<div class="name">To: <span class="glitter">Lipsita</span></div>
+<h1>Happy Birthday, Meri Jaan</h1>
+<h2 class="small">One for u...</h2>
+<div class="shayari">1) "Tere hatho pe muskan, tere dil me pyaar —<br>har pal mera tera, har lamha tera yaar."</div>
+<div class="controls"><button class="btn" id="next1">Next →</button></div>
+</div>
+</section>
+
+<!-- Page 2 -->
+<section class="page hidden" data-index="1">
+<div class="card">
+<div class="name">For You</div>
+<h1>Shayari — Page 2</h1>
+<h2 class="small">Romantic sairi</h2>
+<div class="shayari">2) "Zindagi ki raato me, tera saath ho saath —<br>khushiyon ka ho samaan, mile sadaa har raat."</div>
+<div class="controls"><button class="btn" id="prev2">← Prev</button><button class="btn" id="next2">Next →</button></div>
+</div>
+</section>
+
+<!-- Page 3 -->
+<section class="page hidden" data-index="2">
+<div class="card">
+<div class="name">My Promise</div>
+<h1>Shayari — Page 3</h1>
+<h2 class="small">Short and sweet</h2>
+<div class="shayari">3) "Har subah tera noor, har shaam tera pyaar —<br>sath chale hum sada, bharen zindagi pyaar se yaar."</div>
+<div class="controls"><button class="btn" id="prev3">← Prev</button><button class="btn" id="next3">Next →</button></div>
+</div>
+</section>
+
+<!-- Page 4 - final -->
+<section class="page hidden" data-index="3">
+<div class="card">
+<div class="heart-wrap">
+<div class="heart" aria-hidden="true"></div>
+<h1 class="glitter">Happy Birthday, Meri Little Mommiii💖!</h1>
+<h2 class="small">May your day be as bright and lovely as you are.</h2>
+<div style="margin-top:12px;font-weight:700;font-size:1.2rem;color:#fff">Together forever ❤️</div>
+<div style="margin-top:10px;color:rgba(255,255,255,0.8)">— With all my love</div>
+</div>
+
+<!-- Cake -->
+<div id="cake-box" style="margin-top:24px;display:flex;justify-content:center;align-items:center;">
+<svg id="cake" width="190" height="190" viewBox="0 0 200 200" style="overflow:visible">
+<defs>
+    <clipPath id="slice-left" clipPathUnits="userSpaceOnUse">
+        <rect x="30" y="80" width="45" height="110"/>
+    </clipPath>
+    <clipPath id="slice-middle" clipPathUnits="userSpaceOnUse">
+        <rect x="75" y="80" width="50" height="110"/>
+    </clipPath>
+    <clipPath id="slice-right" clipPathUnits="userSpaceOnUse">
+        <rect x="125" y="80" width="45" height="110"/>
+    </clipPath>
+</defs>
+<g class="cake-piece" data-shift="-30" clip-path="url(#slice-left)">
+    <rect x="30" y="120" width="140" height="60" rx="10" fill="#ffb6c1" stroke="#ffffff55" stroke-width="3"/>
+    <path d="M30 120 C50 150 80 90 100 120 C120 150 150 90 170 120" fill="#ffe7ef"/>
+</g>
+<g class="cake-piece" data-shift="0" clip-path="url(#slice-middle)">
+    <rect x="30" y="120" width="140" height="60" rx="10" fill="#ffb6c1" stroke="#ffffff55" stroke-width="3"/>
+    <path d="M30 120 C50 150 80 90 100 120 C120 150 150 90 170 120" fill="#ffe7ef"/>
+</g>
+<g class="cake-piece" data-shift="30" clip-path="url(#slice-right)">
+    <rect x="30" y="120" width="140" height="60" rx="10" fill="#ffb6c1" stroke="#ffffff55" stroke-width="3"/>
+    <path d="M30 120 C50 150 80 90 100 120 C120 150 150 90 170 120" fill="#ffe7ef"/>
+</g>
+
+<!-- Candle body -->
+<rect x="95" y="60" width="10" height="40" rx="3" fill="#fef3c7" stroke="#facc15" stroke-width="1"/>
+<!-- Wax stripes -->
+<path d="M97 62 L99 68 L97 74 L99 80 L97 86" stroke="#f97316" stroke-width="1" fill="none" />
+<path d="M101 62 L103 68 L101 74 L103 80 L101 86" stroke="#fb923c" stroke-width="1" fill="none" />
+
+<!-- Candle top -->
+<ellipse cx="100" cy="60" rx="5" ry="2.2" fill="#facc15" />
+
+<!-- Flame glow -->
+<defs>
+  <radialGradient id="flameGradient" cx="50%" cy="30%" r="70%">
+    <stop offset="0%" stop-color="#fff9c4"/>
+    <stop offset="40%" stop-color="#ffe066"/>
+    <stop offset="100%" stop-color="#ff8c42" stop-opacity="0.1"/>
+  </radialGradient>
+
+  <filter id="flameGlow" x="-50%" y="-50%" width="200%" height="200%">
+    <feGaussianBlur stdDeviation="2.5" result="blur" />
+    <feMerge>
+      <feMergeNode in="blur" />
+      <feMergeNode in="SourceGraphic" />
+    </feMerge>
+  </filter>
+</defs>
+
+<!-- Flame group (animated in CSS) -->
+<g id="flameOuter" filter="url(#flameGlow)">
+  <!-- Outer soft flame -->
+  <path id="flame" d="M100 44 C93 56 95 64 100 66 C105 64 107 56 100 44"
+        fill="url(#flameGradient)" />
+  <!-- Inner bright core -->
+  <path d="M100 46 C96 55 97 60 100 61 C103 60 104 55 100 46"
+        fill="#fff7ae" />
+</g>
+
+<g id="cutLines" stroke="#fff" stroke-width="4">
+    <line class="cut-line" data-cut-length="60" x1="70" y1="120" x2="70" y2="180" stroke-dasharray="60" stroke-dashoffset="60">
+        <animate class="cut-anim" attributeName="stroke-dashoffset" begin="indefinite" dur="0.8s" to="0" fill="freeze"/>
+    </line>
+    <line class="cut-line" data-cut-length="60" x1="100" y1="120" x2="100" y2="180" stroke-dasharray="60" stroke-dashoffset="60">
+        <animate class="cut-anim" attributeName="stroke-dashoffset" begin="indefinite" dur="0.8s" to="0" fill="freeze"/>
+    </line>
+    <line class="cut-line" data-cut-length="60" x1="130" y1="120" x2="130" y2="180" stroke-dasharray="60" stroke-dashoffset="60">
+        <animate class="cut-anim" attributeName="stroke-dashoffset" begin="indefinite" dur="0.8s" to="0" fill="freeze"/>
+    </line>
+</g>
+</svg>
+</div>
+
+<canvas id="confetti" style="width:100%;height:220px;margin-top:18px;display:block"></canvas>
+
+<div class="controls">
+<button class="btn" id="prev4">← Prev</button>
+<button class="btn" id="replay">Replay</button>
+<button class="btn" id="cutCake">Cut Cake 🎂</button>
+</div>
+
+<!-- Gift Section Lower Half -->
+<div id="giftSection" style="margin-top:40px; display:none; flex-direction:column; align-items:center;">
+    <div id="giftModalButton" style="
+        cursor:pointer;
+        background:#ff4f70;
+        padding:18px 28px;
+        border-radius:20px;
+        font-size:1.5rem;
+        box-shadow:0 0 20px rgba(255,255,255,0.3);
+        animation:bounce 1.5s infinite alternate;
+    ">🎁 Open Gift</div>
+
+    <div id="passwordContainer" class="hidden" style="
+        margin-top:20px;
+        display:none;
+        gap:10px;
+        justify-content:center;
+        align-items:center;
+    ">
+        <input id="giftPassword" type="password" placeholder="Enter Password" style="
+            padding:10px;
+            border-radius:10px;
+            border:none;
+            outline:none;
+            font-size:1.1rem;
+        "/>
+        <button id="unlockGift" style="
+            padding:10px 18px;
+            border-radius:10px;
+            background:#fff;
+            color:#ff2d55;
+            font-weight:700;
+            cursor:pointer;
+        ">Unlock</button>
+    </div>
+</div>
+
+<!-- Hidden Gallery Page (unlocked by password) -->
+<div id="galleryOverlay" class="gallery-overlay" aria-hidden="true">
+    <div class="gallery-inner">
+        <div class="gallery-header">
+            <div>
+                <div class="gallery-title">My favourite photos of you 💖</div>
+                <div class="small">Only for you, unlocked with our secret password.</div>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <button id="downloadAllBtn" class="gallery-close">Download All</button>
+                <button id="closeGallery" class="gallery-close">Close</button>
+            </div>
+        </div>
+        <div class="gallery-grid">
+            <!-- Using your actual file names with .jpeg extension -->
+            <img src="WhatsApp Image 2025-12-04 at 02.42.45.jpeg" alt="photo 1">
+            <img src="WhatsApp Image 2025-12-04 at 15.43.45.jpeg" alt="photo 2">
+            <img src="WhatsApp Image 2025-12-04 at 15.43.46.jpeg" alt="photo 3">
+            <img src="WhatsApp Image 2025-12-04 at 15.43.47.jpeg" alt="photo 4">
+            <img src="WhatsApp Image 2025-12-04 at 15.43.48.jpeg" alt="photo 5">
+        </div>
+    </div>
+</div>
+
+</div>
+</section>
+</div>
+
+<div style="display:flex;justify-content:center;padding:12px">
+<div id="dots" style="display:flex;align-items:center"></div>
+</div>
+
+<div class="hint">Use ← and → or click Next/Prev — tap cards on mobile</div>
+<footer>Made with ❤️</footer>
+
+<!-- JSZip for Download All -->
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+<script>
+// Page navigation
+const pages = Array.from(document.querySelectorAll('.page'))
+let index = 0
+const dotsWrap = document.getElementById('dots')
+const cakePieces = Array.from(document.querySelectorAll('.cake-piece'))
+const sidePhotos = Array.from(document.querySelectorAll('.side-photo'))
+
+function renderDots(){
+    dotsWrap.innerHTML=''
+    pages.forEach((p,i)=>{
+        const d=document.createElement('div')
+        d.className='nav-dot'+(i===index?' active':'')
+        d.addEventListener('click',()=>goTo(i))
+        dotsWrap.appendChild(d)
+    })
+}
+
+function show(i){
+    pages.forEach((p,idx)=>{idx===i?p.classList.remove('hidden'):p.classList.add('hidden')})
+    index=i
+    renderDots()
+    if(index===pages.length-1) finalPageSetup()
+    // Hide side photos on the final page so they don't overlap the last card
+    if(sidePhotos.length){
+        const hide = index === pages.length - 1
+        sidePhotos.forEach(p=>{p.style.display = hide ? 'none' : ''})
+    }
+}
+
+function goTo(i){if(i<0||i>=pages.length)return; show(i)}
+document.getElementById('next1').addEventListener('click',()=>goTo(1))
+document.getElementById('prev2').addEventListener('click',()=>goTo(0))
+document.getElementById('next2').addEventListener('click',()=>goTo(2))
+document.getElementById('prev3').addEventListener('click',()=>goTo(1))
+document.getElementById('next3').addEventListener('click',()=>goTo(3))
+document.getElementById('prev4').addEventListener('click',()=>goTo(2))
+document.getElementById('replay').addEventListener('click',()=>show(0))
+window.addEventListener('keydown',e=>{if(e.key==='ArrowRight')goTo(Math.min(index+1,pages.length-1)); if(e.key==='ArrowLeft')goTo(Math.max(index-1,0))})
+
+// Scroll slider controls the entire page scroll
+const scrollSlider=document.getElementById('scrollSlider')
+function getMaxScroll(){return Math.max(document.documentElement.scrollHeight-document.documentElement.clientHeight,0)}
+function updateScrollSlider(){
+    if(!scrollSlider)return
+    const max=getMaxScroll()
+    if(max<=0){
+        scrollSlider.disabled=true
+        scrollSlider.value=0
+        return
+    }
+    scrollSlider.disabled=false
+    const scrollTop=window.pageYOffset||document.documentElement.scrollTop||document.body.scrollTop||0
+    scrollSlider.value=(scrollTop/max)*100
+}
+if(scrollSlider){
+    updateScrollSlider()
+    window.addEventListener('scroll',updateScrollSlider)
+    window.addEventListener('resize',updateScrollSlider)
+    scrollSlider.addEventListener('input',e=>{
+        const max=getMaxScroll()
+        const target=(Number(e.target.value)/100)*max
+        window.scrollTo({top:target,behavior:'auto'})
+    })
+}
+
+// Confetti and cake functions
+const canvas=document.getElementById('confetti')
+const ctx=canvas.getContext('2d')
+let confettiPieces=[],confettiRAF=null
+function resizeCanvas(){canvas.width=canvas.offsetWidth;canvas.height=canvas.offsetHeight}
+window.addEventListener('resize',resizeCanvas);resizeCanvas()
+function rand(min,max){return Math.random()*(max-min)+min}
+function makeConfetti(){confettiPieces=[];for(let i=0;i<60;i++){confettiPieces.push({x:rand(0,canvas.width),y:rand(-canvas.height,0),vx:rand(-0.6,0.6),vy:rand(1,3),size:rand(6,12),rot:rand(0,360),rotSpeed:rand(-6,6),color:['#ff6b92','#ffd28a','#7be2ff','#9bffb2'][Math.floor(rand(0,4))]})}}
+function drawConfetti(){ctx.clearRect(0,0,canvas.width,canvas.height);confettiPieces.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.rot+=p.rotSpeed;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.fillStyle=p.color;ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size*0.6);ctx.restore();if(p.y>canvas.height+20){p.y=rand(-40,0);p.x=rand(0,canvas.width)}});confettiRAF=requestAnimationFrame(drawConfetti)}
+function startConfetti(){makeConfetti();if(!confettiRAF)drawConfetti()}
+function stopConfetti(){if(confettiRAF){cancelAnimationFrame(confettiRAF);confettiRAF=null;ctx.clearRect(0,0,canvas.width,canvas.height)}}
+
+// Cake animation
+function resetCakePieces(){
+    cakePieces.forEach(piece=>{piece.style.transform='translateX(0)'})
+}
+function separateCakePieces(){
+    cakePieces.forEach(piece=>{
+        const shift=Number(piece.getAttribute('data-shift')||0)
+        piece.style.transform=`translateX(${shift}px)`
+    })
+}
+function resetCutLines(){
+    document.querySelectorAll('.cut-line').forEach(line=>{
+        const base=line.getAttribute('data-cut-length')||line.getAttribute('stroke-dasharray')||60
+        line.setAttribute('stroke-dashoffset',base)
+    })
+}
+function startVerticalCuts(){
+    const anims=document.querySelectorAll('.cut-anim')
+    if(!anims.length)return
+    resetCakePieces()
+    resetCutLines()
+    anims.forEach((anim,idx)=>{
+        setTimeout(()=>{try{anim.beginElement()}catch(e){ }},idx*350)
+    })
+    setTimeout(separateCakePieces,anims.length*350+700)
+}
+function autoCut(){setTimeout(startVerticalCuts,1800)}
+function blowCandle(){const flame=document.getElementById('flame');if(flame)setTimeout(()=>{flame.style.opacity=0},1500)}
+function playCelebrationSound(){setTimeout(()=>{try{const audio=new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_7f94199f56.mp3?filename=success-1-6297.mp3');audio.play().catch(()=>{});}catch(e){ }},2600)}
+function startFireworks(){setTimeout(()=>{for(let i=0;i<3;i++)setTimeout(startConfetti,i*600)},2600)}
+
+// Final page setup
+function finalPageSetup(){
+    startConfetti(); autoCut(); startFireworks(); blowCandle(); playCelebrationSound();
+    document.getElementById('giftSection').style.display='flex';
+}
+
+// Gift button & password
+const giftButton=document.getElementById('giftModalButton')
+const passwordContainer=document.getElementById('passwordContainer')
+const unlockGift=document.getElementById('unlockGift')
+const giftPassword=document.getElementById('giftPassword')
+const galleryOverlay=document.getElementById('galleryOverlay')
+const closeGallery=document.getElementById('closeGallery')
+
+giftButton.addEventListener('click',()=>{
+    passwordContainer.classList.remove('hidden')
+    passwordContainer.style.display='flex'
+    giftButton.style.display='none'
+})
+
+unlockGift.addEventListener('click',()=>{
+    if(giftPassword.value==="MeriMommi"){
+        if(galleryOverlay){
+            galleryOverlay.style.display='flex'
+            galleryOverlay.setAttribute('aria-hidden','false')
+        }
+        if(passwordContainer){
+            passwordContainer.classList.add('hidden')
+            passwordContainer.style.display='none'
+        }
+    } else {
+        giftPassword.style.border='2px solid red'; giftPassword.value=''
+    }
+})
+
+if(closeGallery && galleryOverlay){
+    closeGallery.addEventListener('click',()=>{
+        galleryOverlay.style.display='none'
+        galleryOverlay.setAttribute('aria-hidden','true')
+    })
+}
+
+// Download all gallery images as a ZIP
+const downloadAllBtn = document.getElementById('downloadAllBtn');
+
+async function downloadAllImages() {
+    const zip = new JSZip();
+
+    const imgElements = Array.from(galleryOverlay.querySelectorAll('img'));
+
+    if (imgElements.length === 0) {
+        alert('No images found to download.');
+        return;
+    }
+
+    const fetchPromises = imgElements.map(async (img, index) => {
+        const url = img.src;
+        try {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error('Network error');
+            const blob = await res.blob();
+            const arrayBuffer = await blob.arrayBuffer();
+
+            const urlParts = url.split('?')[0].split('/');
+            const fileNameFromUrl = urlParts[urlParts.length - 1];
+            const fileName = fileNameFromUrl || `image-${index + 1}.jpg`;
+
+            zip.file(fileName, arrayBuffer);
+        } catch (e) {
+            console.error('Failed to fetch image:', url, e);
+        }
+    });
+
+    await Promise.all(fetchPromises);
+
+    const content = await zip.generateAsync({ type: 'blob' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(content);
+    a.download = 'all-pictures.zip';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+}
+
+if (downloadAllBtn) {
+    downloadAllBtn.addEventListener('click', downloadAllImages);
+}
+
+const cutCakeBtn=document.getElementById('cutCake')
+if(cutCakeBtn){
+    cutCakeBtn.addEventListener('click',()=>{
+        startVerticalCuts()
+        startConfetti()
+    })
+}
+
+// Init
+resetCakePieces();
+renderDots(); show(0)
+</script>
+</body>
+</html>
