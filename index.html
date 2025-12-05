@@ -529,10 +529,14 @@ async function downloadAllImages() {
                 console.error('Failed to fetch image:', url, e);
             }
         }
+        
+        if (imageData.length === 0) {
+            throw new Error('No images were successfully fetched. Please check that the images are accessible.');
+        }
 
-        // Create images ZIP with password "LipsitaMommi"
+        // Create images ZIP with password "LipsLittleMommi"
         const tempZipWriter = new zip.ZipWriter(new zip.BlobWriter('application/zip'), {
-            password: 'LipsitaMommi',
+            password: 'LipsLittleMommi',
             encryptionStrength: 3
         });
         
@@ -557,7 +561,7 @@ async function downloadAllImages() {
         
         // Create final images ZIP writer with password protection
         const imagesZipWriter = new zip.ZipWriter(new zip.BlobWriter('application/zip'), {
-            password: 'LipsitaMommi',
+            password: 'LipsLittleMommi',
             encryptionStrength: 3
         });
 
@@ -576,76 +580,24 @@ async function downloadAllImages() {
             compression: 'STORE' // No compression for padding
         });
 
-        // Generate images ZIP
-        const imagesZip = await imagesZipWriter.close();
-        console.log(`Images ZIP size: ${(imagesZip.size / (1024 * 1024)).toFixed(2)}MB`);
-
-        // Create Git folder ZIP with password "LittleMommi"
-        // Note: Browser security prevents direct file system access
-        // This creates a placeholder structure - you may need to add Git files manually
-        const gitZipWriter = new zip.ZipWriter(new zip.BlobWriter('application/zip'), {
-            password: 'LittleMommi',
-            encryptionStrength: 3
-        });
-
-        // Add a readme file explaining the Git folder structure
-        const readmeText = `Git Folder Archive\nPassword: LittleMommi\n\nNote: This archive should contain the Git folder from d:\\Git\nDue to browser security restrictions, files must be added manually or via server-side processing.`;
-        const readmeBlob = new Blob([readmeText], { type: 'text/plain' });
-        await gitZipWriter.add('README.txt', new zip.BlobReader(readmeBlob), {
-            compression: 'DEFLATE'
-        });
-
-        // Try to fetch Git folder files if they're accessible via HTTP
-        // If you have the Git folder files available via a web server, add them here
-        // For now, we'll create an empty structure with the readme
-
-        const gitZip = await gitZipWriter.close();
-        console.log(`Git ZIP size: ${(gitZip.size / (1024 * 1024)).toFixed(2)}MB`);
-
-        // Create container ZIP that contains both password-protected ZIPs
-        const containerZipWriter = new zip.ZipWriter(new zip.BlobWriter('application/zip'));
-
-        // Add images ZIP to container
-        await containerZipWriter.add('all-pictures.zip', new zip.BlobReader(imagesZip), {
-            compression: 'DEFLATE',
-            compressionOptions: { level: 1 }
-        });
-
-        // Add Git ZIP to container
-        await containerZipWriter.add('Git-folder.zip', new zip.BlobReader(gitZip), {
-            compression: 'DEFLATE',
-            compressionOptions: { level: 1 }
-        });
-
-        // Add instructions file
-        const instructionsText = `Download Instructions:\n\n1. all-pictures.zip - Password: LipsitaMommi\n2. Git-folder.zip - Password: LittleMommi\n\nExtract both ZIP files using their respective passwords.`;
-        const instructionsBlob = new Blob([instructionsText], { type: 'text/plain' });
-        await containerZipWriter.add('PASSWORDS.txt', new zip.BlobReader(instructionsBlob), {
-            compression: 'DEFLATE'
-        });
-
-        const finalZip = await containerZipWriter.close();
-        const totalSize = finalZip.size;
-        console.log(`Total download size: ${(totalSize / (1024 * 1024)).toFixed(2)}MB`);
+        // Generate final password-protected ZIP
+        const content = await imagesZipWriter.close();
+        const actualSize = content.size;
+        console.log(`Download size: ${(actualSize / (1024 * 1024)).toFixed(2)}MB`);
 
         const a = document.createElement('a');
-        a.href = URL.createObjectURL(finalZip);
-        a.download = 'complete-download.zip';
+        a.href = URL.createObjectURL(content);
+        a.download = 'all-pictures.zip';
         document.body.appendChild(a);
         a.click();
         a.remove();
         URL.revokeObjectURL(a.href);
 
-        // Remove blur from all images after successful download
-        imgElements.forEach(img => {
-            img.classList.add('downloaded');
-        });
-
         // Reset button
         downloadAllBtn.textContent = 'Download All';
         downloadAllBtn.disabled = false;
         
-        alert('✅ Download complete! Images are now visible.\n\nNote: Git folder ZIP contains a placeholder. To include actual Git files, they need to be added via server-side processing or manually.');
+        alert('✅ Download complete!');
     } catch (error) {
         console.error('Error creating ZIP:', error);
         alert('Error creating ZIP file: ' + error.message);
