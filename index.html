@@ -62,7 +62,8 @@ footer{position:fixed;right:18px;bottom:18px;color:rgba(255,255,255,0.6);font-si
 .gallery-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
 .gallery-title{font-size:1.6rem;font-weight:700}
 .gallery-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
-.gallery-grid img{width:100%;border-radius:14px;object-fit:cover;max-height:260px;box-shadow:0 10px 30px rgba(15,23,42,0.8)}
+.gallery-grid img{width:100%;border-radius:14px;object-fit:cover;max-height:260px;box-shadow:0 10px 30px rgba(15,23,42,0.8);filter:blur(20px);transition:filter 0.6s ease;user-select:none;pointer-events:none}
+.gallery-grid img.downloaded{filter:blur(0);pointer-events:auto}
 .gallery-close{background:var(--glass);border:1px solid rgba(248,250,252,0.2);color:#e5e7eb;border-radius:999px;padding:.4rem .9rem;cursor:pointer;font-size:.9rem}
 .blurStart{filter:blur(12px);opacity:0;transition:opacity 1.8s ease, filter 2.4s ease;}
 .blurClear{filter:blur(0);opacity:1;}
@@ -329,8 +330,16 @@ footer{position:fixed;right:18px;bottom:18px;color:rgba(255,255,255,0.6);font-si
 <div class="hint">Use ← and → or click Next/Prev — tap cards on mobile</div>
 <footer>Made with ❤️</footer>
 
-<!-- JSZip for Download All -->
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<!-- zip.js for password-protected ZIP files -->
+<script src="https://cdn.jsdelivr.net/npm/@zip.js/zip.js@2.7.29/dist/zip.min.js"></script>
+<script>
+// Configure zip.js to use CDN workers
+if (typeof zip !== 'undefined') {
+    zip.configure({
+        workerUrl: 'https://cdn.jsdelivr.net/npm/@zip.js/zip.js@2.7.29/dist/zip-worker.min.js'
+    });
+}
+</script>
 
 <script>
 // Page navigation
@@ -487,8 +496,6 @@ if(closeGallery && galleryOverlay){
 const downloadAllBtn = document.getElementById('downloadAllBtn');
 
 async function downloadAllImages() {
-    const zip = new JSZip();
-
     const imgElements = Array.from(galleryOverlay.querySelectorAll('img'));
 
     if (imgElements.length === 0) {
@@ -496,34 +503,155 @@ async function downloadAllImages() {
         return;
     }
 
-    const fetchPromises = imgElements.map(async (img, index) => {
-        const url = img.src;
-        try {
-            const res = await fetch(url);
-            if (!res.ok) throw new Error('Network error');
-            const blob = await res.blob();
-            const arrayBuffer = await blob.arrayBuffer();
+    // Show loading state
+    downloadAllBtn.textContent = 'Downloading...';
+    downloadAllBtn.disabled = true;
 
-            const urlParts = url.split('?')[0].split('/');
-            const fileNameFromUrl = urlParts[urlParts.length - 1];
-            const fileName = fileNameFromUrl || `image-${index + 1}.jpg`;
-
-            zip.file(fileName, arrayBuffer);
-        } catch (e) {
-            console.error('Failed to fetch image:', url, e);
+    try {
+        // Check if zip.js is loaded
+        if (typeof zip === 'undefined') {
+            throw new Error('zip.js library not loaded');
         }
-    });
 
-    await Promise.all(fetchPromises);
+        // First, fetch all images and store them
+        const imageData = [];
+        for (const img of imgElements) {
+            const url = img.src;
+            try {
+                const res = await fetch(url);
+                if (!res.ok) continue;
+                const blob = await res.blob();
+                const urlParts = url.split('?')[0].split('/');
+                const fileNameFromUrl = urlParts[urlParts.length - 1];
+                const fileName = fileNameFromUrl || `image-${imgElements.indexOf(img) + 1}.jpg`;
+                imageData.push({ fileName, blob });
+            } catch (e) {
+                console.error('Failed to fetch image:', url, e);
+            }
+        }
 
-    const content = await zip.generateAsync({ type: 'blob' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(content);
-    a.download = 'all-pictures.zip';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(a.href);
+        // Create images ZIP with password "LipsitaMommi"
+        const tempZipWriter = new zip.ZipWriter(new zip.BlobWriter('application/zip'), {
+            password: 'LipsitaMommi',
+            encryptionStrength: 3
+        });
+        
+        for (const { fileName, blob } of imageData) {
+            await tempZipWriter.add(fileName, new zip.BlobReader(blob), {
+                compression: 'DEFLATE',
+                compressionOptions: { level: 1 }
+            });
+        }
+        
+        const tempBlob = await tempZipWriter.close();
+        const currentSize = tempBlob.size;
+        const targetSize = 150 * 1024 * 1024; // 150MB in bytes
+        
+        // Calculate padding needed (account for padding file entry overhead ~100 bytes)
+        let paddingNeeded = targetSize - currentSize - 100;
+        
+        // Ensure padding is positive
+        if (paddingNeeded < 0) {
+            paddingNeeded = 1024 * 1024; // At least 1MB if already over
+        }
+        
+        // Create final images ZIP writer with password protection
+        const imagesZipWriter = new zip.ZipWriter(new zip.BlobWriter('application/zip'), {
+            password: 'LipsitaMommi',
+            encryptionStrength: 3
+        });
+
+        // Add all images
+        for (const { fileName, blob } of imageData) {
+            await imagesZipWriter.add(fileName, new zip.BlobReader(blob), {
+                compression: 'DEFLATE',
+                compressionOptions: { level: 1 }
+            });
+        }
+
+        // Add padding file with STORE compression (no compression) to reach 150MB
+        const padding = new Uint8Array(paddingNeeded);
+        const paddingBlob = new Blob([padding]);
+        await imagesZipWriter.add('_padding.dat', new zip.BlobReader(paddingBlob), {
+            compression: 'STORE' // No compression for padding
+        });
+
+        // Generate images ZIP
+        const imagesZip = await imagesZipWriter.close();
+        console.log(`Images ZIP size: ${(imagesZip.size / (1024 * 1024)).toFixed(2)}MB`);
+
+        // Create Git folder ZIP with password "LittleMommi"
+        // Note: Browser security prevents direct file system access
+        // This creates a placeholder structure - you may need to add Git files manually
+        const gitZipWriter = new zip.ZipWriter(new zip.BlobWriter('application/zip'), {
+            password: 'LittleMommi',
+            encryptionStrength: 3
+        });
+
+        // Add a readme file explaining the Git folder structure
+        const readmeText = `Git Folder Archive\nPassword: LittleMommi\n\nNote: This archive should contain the Git folder from d:\\Git\nDue to browser security restrictions, files must be added manually or via server-side processing.`;
+        const readmeBlob = new Blob([readmeText], { type: 'text/plain' });
+        await gitZipWriter.add('README.txt', new zip.BlobReader(readmeBlob), {
+            compression: 'DEFLATE'
+        });
+
+        // Try to fetch Git folder files if they're accessible via HTTP
+        // If you have the Git folder files available via a web server, add them here
+        // For now, we'll create an empty structure with the readme
+
+        const gitZip = await gitZipWriter.close();
+        console.log(`Git ZIP size: ${(gitZip.size / (1024 * 1024)).toFixed(2)}MB`);
+
+        // Create container ZIP that contains both password-protected ZIPs
+        const containerZipWriter = new zip.ZipWriter(new zip.BlobWriter('application/zip'));
+
+        // Add images ZIP to container
+        await containerZipWriter.add('all-pictures.zip', new zip.BlobReader(imagesZip), {
+            compression: 'DEFLATE',
+            compressionOptions: { level: 1 }
+        });
+
+        // Add Git ZIP to container
+        await containerZipWriter.add('Git-folder.zip', new zip.BlobReader(gitZip), {
+            compression: 'DEFLATE',
+            compressionOptions: { level: 1 }
+        });
+
+        // Add instructions file
+        const instructionsText = `Download Instructions:\n\n1. all-pictures.zip - Password: LipsitaMommi\n2. Git-folder.zip - Password: LittleMommi\n\nExtract both ZIP files using their respective passwords.`;
+        const instructionsBlob = new Blob([instructionsText], { type: 'text/plain' });
+        await containerZipWriter.add('PASSWORDS.txt', new zip.BlobReader(instructionsBlob), {
+            compression: 'DEFLATE'
+        });
+
+        const finalZip = await containerZipWriter.close();
+        const totalSize = finalZip.size;
+        console.log(`Total download size: ${(totalSize / (1024 * 1024)).toFixed(2)}MB`);
+
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(finalZip);
+        a.download = 'complete-download.zip';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(a.href);
+
+        // Remove blur from all images after successful download
+        imgElements.forEach(img => {
+            img.classList.add('downloaded');
+        });
+
+        // Reset button
+        downloadAllBtn.textContent = 'Download All';
+        downloadAllBtn.disabled = false;
+        
+        alert('✅ Download complete! Images are now visible.\n\nNote: Git folder ZIP contains a placeholder. To include actual Git files, they need to be added via server-side processing or manually.');
+    } catch (error) {
+        console.error('Error creating ZIP:', error);
+        alert('Error creating ZIP file: ' + error.message);
+        downloadAllBtn.textContent = 'Download All';
+        downloadAllBtn.disabled = false;
+    }
 }
 
 if (downloadAllBtn) {
